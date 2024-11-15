@@ -13,6 +13,7 @@ import {
   createAction,
   createListenerMiddleware,
   createSlice,
+  isAnyOf,
   isFluxStandardAction,
 } from '@reduxjs/toolkit'
 
@@ -250,6 +251,23 @@ describe('type tests', () => {
       matcher: incrementByAmount.match,
       effect: (action, listenerApi) => {
         expectTypeOf(action).toMatchTypeOf<PayloadAction<number>>()
+      },
+    })
+
+    interface ExtraAction extends Action<'abcd'> {
+      payload: number
+    }
+
+    function isPayloadAction(action: any): action is ExtraAction {
+      return (
+        isFluxStandardAction(action) && typeof action.payload === 'number'
+      )
+    }
+
+    startListening({
+      matcher: isAnyOf(isPayloadAction),
+      effect: (action, listenerApi) => {
+        expectTypeOf(action).toMatchTypeOf<ExtraAction>()
       },
     })
 
